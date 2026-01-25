@@ -438,12 +438,11 @@ export default function ChatbotPage() {
         }
     }, [showPhoneInput]);
 
-    // Redirect to thank-you page after phone submission
     useEffect(() => {
         if (phoneSubmitted) {
             const timer = setTimeout(() => {
-                window.location.href = "http://myfuture.co.il/thank-you";
-            }, 5000);
+                window.location.href = "https://myfuture.co.il/thank-you";
+            }, 3000);
             
             return () => clearTimeout(timer);
         }
