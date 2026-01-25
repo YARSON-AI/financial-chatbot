@@ -1,7 +1,7 @@
 export interface Question {
     id: string;
     text: string;
-    type: 'text' | 'number' | 'sum' | 'multiple';
+    type: 'text' | 'number' | 'sum' | 'multiple' | 'phone' | 'email';
     options?: string[];
     nextQuestions?: string[];
     answers?: Answer[];

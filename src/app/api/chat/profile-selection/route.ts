@@ -3,13 +3,13 @@ import { getSelectedProfileDescription } from "@/constants/messages";
 
 export async function POST(req: Request) {
     try {
-        const { score, gender, userName } = await req.json();
+        const { score, userName } = await req.json();
 
         const profileName = getProfileByScore(Number(score));
         const profile = financialProfiles[profileName];
-        const profileDescription = profile[gender === "male" ? "male" : "female"];
-        const genderedProfileName = profile[gender === "male" ? "maleName" : "femaleName"];
-        const selectedProfileDescriptionMessages = getSelectedProfileDescription(userName, genderedProfileName, profileDescription, gender);
+        const profileDescription = profile.male;
+        const profileDisplayName = profile.maleName;
+        const selectedProfileDescriptionMessages = getSelectedProfileDescription(userName, profileDisplayName, profileDescription);
 
         return Response.json({
             profile: profileName,

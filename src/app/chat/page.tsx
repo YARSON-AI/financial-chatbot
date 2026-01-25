@@ -3,13 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { Question, ConversationItem, QuestionAnswerPair, Answer } from "@/types";
 import { NumberInput } from "@/components/NumberInput";
+import { PhoneInput, validatePhone } from "@/components/PhoneInput";
+import { EmailInput, validateEmail } from "@/components/EmailInput";
 import { MultipleChoice } from "@/components/MultipleChoice";
 import { MessageBubble } from "@/components/MessageBubble";
 import { Loader } from "@/components/Loader";
 // import { RobotModel } from "@/components/RobotModel";
 import styles from "./page.module.css";
 import { IoSend } from "react-icons/io5";
-import { initMessages, systemMessages, phoneRequestMessage, getGreetingMessage } from "@/constants/messages";
+import { initMessages, systemMessages } from "@/constants/messages";
 import { replacePlaceholders } from "@/utils/text";
 
 
@@ -37,7 +39,6 @@ export default function ChatbotPage() {
     const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
     const [isLoadingProfile, setIsLoadingProfile] = useState(false);
     const [userName, setUserName] = useState("");
-    const [userGender, setUserGender] = useState("");
     const [showPhoneRequestMessage, setShowPhoneRequestMessage] = useState(false);
     const [profileSelectionComplete, setProfileSelectionComplete] = useState(false);
     const [userScore, setUserScore] = useState(0);
@@ -179,27 +180,8 @@ export default function ChatbotPage() {
             },
         ]);
 
-        // Set user name and gender based on question index
-        if (currentQuestionIndex === 0) {
+        if (currentQuestion.id === 'q7') {
             setUserName(answerText.trim());
-            
-            // Add the after-first-question message
-            setTimeout(() => {
-                setConversation((prev) => [
-                    ...prev,
-                    {
-                        id: "after-first-question",
-                        type: "question",
-                        content: getGreetingMessage(answerText.trim()),
-                    },
-                ]);
-            }, 1000); // Small delay for better UX
-        } else if (currentQuestionIndex === 1) {
-            const selectedAnswer = typeof answer === 'object' ? answer : null;
-            if (selectedAnswer && currentQuestion.answers) {
-                const answerIndex = currentQuestion.answers.findIndex(a => a.answer_id === selectedAnswer.answer_id);
-                setUserGender(answerIndex === 0 ? "male" : "female");
-            }
         }
 
         // Add to question-answer pairs for AI context
@@ -245,7 +227,7 @@ export default function ChatbotPage() {
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: JSON.stringify({ score: finalScore, gender: userGender, userName }),
+                body: JSON.stringify({ score: finalScore, userName }),
             });
             
             const profileData = await profileResponse.json();
@@ -299,18 +281,36 @@ export default function ChatbotPage() {
     const handleFinalQuestionSubmission = async (answer: string, newQAPair: QuestionAnswerPair, finalScore: number) => {        
         setIsQuestionnaireComplete(true);
         setIsLoadingProfile(true);
-        
-        
+
+        try {
+            const conversationString = [...questionAnswerPairs, newQAPair]
+                .map(qa => `שאלה: ${qa.question}\nתשובה: ${qa.answer}`)
+                .join('\n\n');
+
+            const response = await fetch("/api/webhook", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    email: answer.trim(),
+                    userName,
+                    questionAnswerPairs: conversationString,
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to send webhook");
+            }
+        } catch (error) {
+            console.error("Error submitting data:", error);
+        } finally {
+            setIsLoadingProfile(false);
+            setPhoneSubmitted(true);
+        }
     };
 
 
-
-    // Phone validation function
-    const validatePhone = (phone: string): boolean => {
-        const cleanPhone = phone.trim();
-        // Must be at least 9 characters and only contain numbers
-        return cleanPhone.length >= 9 && /^[0-9]+$/.test(cleanPhone);
-    };
 
     // Phone submission handler
     const onPhoneSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -438,6 +438,17 @@ export default function ChatbotPage() {
         }
     }, [showPhoneInput]);
 
+    // Redirect to thank-you page after phone submission
+    useEffect(() => {
+        if (phoneSubmitted) {
+            const timer = setTimeout(() => {
+                window.location.href = "http://myfuture.co.il/thank-you";
+            }, 5000);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [phoneSubmitted]);
+
     // Show input area with delay after question appears
     useEffect(() => {
         if (showInput || showPhoneInput) {
@@ -453,13 +464,22 @@ export default function ChatbotPage() {
     return (
         <div className="flex justify-center m-4" dir="rtl">
             <div
-                className={`w-full max-w-md h-[600px] rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col ${styles["chat-container"]}`}
+                className={`w-full max-w-md h-[680px] rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col ${styles["chat-container"]}`}
             >
 
                 {/* Messages Container */}
                 <div ref={messagesContainerRef} className={`flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-3`}>
                     {/* <RobotModel /> */}
                     
+                    {/* Intro Image */}
+                    <MessageBubble role="system" content="">
+                        <img 
+                            src="https://www.financialplanning.co.il/wp-content/uploads/2026/01/%D7%AA%D7%9E%D7%95%D7%A0%D7%AA-%D7%A4%D7%A8%D7%95%D7%A4%D7%99%D7%9C-%D7%90%D7%A8%D7%99%D7%90%D7%9C-%D7%90%D7%96%D7%95%D7%90%D7%9C%D7%95%D7%A1.jpg"
+                            alt="אריאל אזואלוס - מתכנן פיננסי"
+                            className="w-72 h-auto rounded-xl"
+                        />
+                    </MessageBubble>
+
                     {/* Greeting Messages */}
                     {initMessages.map((message, index) => (
                         <MessageBubble key={`greeting-${index}`} role="system" content={message} />
@@ -538,12 +558,12 @@ export default function ChatbotPage() {
                     )} */}
 
                     {/* Call to Action Message */}
-                    {showPhoneRequestMessage && !phoneSubmitted && (
+                    {/* {showPhoneRequestMessage && !phoneSubmitted && (
                         <MessageBubble 
                             role="system" 
                             content={phoneRequestMessage}
                         />
-                    )}
+                    )} */}
 
                     {/* Success Message after phone submission */}
                     {phoneSubmitted && (
@@ -591,6 +611,26 @@ export default function ChatbotPage() {
                                     </div>
                                 )}
 
+                                {showInput && currentQuestion?.type === "phone" && (
+                                    <div className="flex-1 min-w-0">
+                                        <PhoneInput
+                                            value={inputValue}
+                                            onChange={setInputValue}
+                                            onSubmit={() => validatePhone(inputValue) && handleAnswer(inputValue.trim())}
+                                        />
+                                    </div>
+                                )}
+
+                                {showInput && currentQuestion?.type === "email" && (
+                                    <div className="flex-1 min-w-0">
+                                        <EmailInput
+                                            value={inputValue}
+                                            onChange={setInputValue}
+                                            onSubmit={() => validateEmail(inputValue) && handleAnswer(inputValue.trim())}
+                                        />
+                                    </div>
+                                )}
+
                                 {showPhoneInput && (
                                     <input
                                         ref={phoneInputRef}
@@ -618,9 +658,21 @@ export default function ChatbotPage() {
 
                                 <button
                                     type={showPhoneInput ? "submit" : "button"}
-                                    onClick={showInput ? () => inputValue.trim() && handleAnswer(inputValue.trim()) : undefined}
+                                    onClick={showInput ? () => {
+                                        if (currentQuestion?.type === "phone" && validatePhone(inputValue)) {
+                                            handleAnswer(inputValue.trim());
+                                        } else if (currentQuestion?.type === "email" && validateEmail(inputValue)) {
+                                            handleAnswer(inputValue.trim());
+                                        } else if (currentQuestion?.type !== "phone" && currentQuestion?.type !== "email" && inputValue.trim()) {
+                                            handleAnswer(inputValue.trim());
+                                        }
+                                    } : undefined}
                                     className="flex-shrink-0 pr-1 bg-[var(--primary-green)] hover:bg-[var(--primary-green-hover)] disabled:bg-[#888888d4] disabled:hover:bg-[#888888d4] disabled:cursor-not-allowed text-gray-900 font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--primary-green)] flex items-center justify-center w-[60px] h-[48px] rounded-full max-[349px]:w-[48px] max-[349px]:h-[48px]"
-                                    disabled={showInput ? !inputValue.trim() : !phoneValue.trim() || !validatePhone(phoneValue.trim())}
+                                    disabled={showInput ? (
+                                        currentQuestion?.type === "phone" ? !validatePhone(inputValue) :
+                                        currentQuestion?.type === "email" ? !validateEmail(inputValue) :
+                                        !inputValue.trim()
+                                    ) : !phoneValue.trim() || !validatePhone(phoneValue.trim())}
                                 >
                                     <IoSend className="rotate-180 text-2xl max-[349px]:text-xl" />
                                 </button>
