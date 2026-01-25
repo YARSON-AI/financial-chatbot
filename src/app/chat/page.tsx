@@ -464,7 +464,7 @@ export default function ChatbotPage() {
     return (
         <div className="flex justify-center m-4" dir="rtl">
             <div
-                className={`w-full max-w-md h-[680px] rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col ${styles["chat-container"]}`}
+                className={`w-full max-w-md h-[620px] rounded-3xl shadow-[0_4px_12px_rgba(0,0,0,0.05)] flex flex-col ${styles["chat-container"]}`}
             >
 
                 {/* Messages Container */}
@@ -472,11 +472,11 @@ export default function ChatbotPage() {
                     {/* <RobotModel /> */}
                     
                     {/* Intro Image */}
-                    <MessageBubble role="system" content="">
+                    <MessageBubble role="user" content="">
                         <img 
                             src="https://www.financialplanning.co.il/wp-content/uploads/2026/01/%D7%AA%D7%9E%D7%95%D7%A0%D7%AA-%D7%A4%D7%A8%D7%95%D7%A4%D7%99%D7%9C-%D7%90%D7%A8%D7%99%D7%90%D7%9C-%D7%90%D7%96%D7%95%D7%90%D7%9C%D7%95%D7%A1.jpg"
                             alt="אריאל אזואלוס - מתכנן פיננסי"
-                            className="w-72 h-auto rounded-xl"
+                            className="w-48 h-auto rounded-xl"
                         />
                     </MessageBubble>
 
