@@ -39,6 +39,7 @@ export default function ChatbotPage() {
     const [selectedProfile, setSelectedProfile] = useState<string | null>(null);
     const [isLoadingProfile, setIsLoadingProfile] = useState(false);
     const [userName, setUserName] = useState("");
+    const [userPhone, setUserPhone] = useState("");
     const [showPhoneRequestMessage, setShowPhoneRequestMessage] = useState(false);
     const [profileSelectionComplete, setProfileSelectionComplete] = useState(false);
     const [userScore, setUserScore] = useState(0);
@@ -184,6 +185,10 @@ export default function ChatbotPage() {
             setUserName(answerText.trim());
         }
 
+        if (currentQuestion.type === 'phone') {
+            setUserPhone(answerText.trim());
+        }
+
         // Add to question-answer pairs for AI context
         const newQAPair: QuestionAnswerPair = {
             question: replacePlaceholders(currentQuestion.text, userName),
@@ -294,6 +299,7 @@ export default function ChatbotPage() {
                 },
                 body: JSON.stringify({
                     email: answer.trim(),
+                    phone: userPhone,
                     userName,
                     questionAnswerPairs: conversationString,
                 }),
