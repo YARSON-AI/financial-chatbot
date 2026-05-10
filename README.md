@@ -181,7 +181,7 @@ Deploys cleanly to **Vercel** or any Node host. Configure the same env vars in y
 Built by **YARSON** — full-stack engineer working across React/Next.js, TypeScript, and conversational UX.
 
 - 🌐 Portfolio — [yarson.dev](https://yarson.dev)
-- 💼 LinkedIn — _add your URL here_
+- 💼 LinkedIn — [linkedin.com/in/yarson](https://www.linkedin.com/in/yarson/)
 - 🐙 GitHub — [@YarsCode](https://github.com/YarsCode)
 
 If you're a recruiter or hiring manager, I'm happy to walk through the architecture, the product decisions behind the questionnaire/scoring model, or the trade-offs of using Google Sheets as a CMS — feel free to reach out.
