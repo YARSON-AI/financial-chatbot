@@ -1,4 +1,4 @@
-# Financial Chatbot — FUTURE AI
+# Financial Chatbot — FUTURE
 
 > A conversational financial-profiling assistant, **shipped to production** for a real Israeli financial-planning firm. Visitors are guided through a Hebrew questionnaire, classified into one of four investor archetypes, and routed into the firm's CRM as qualified leads.
 
@@ -10,8 +10,6 @@ Built solo, end-to-end — product, design, frontend, backend, and integrations 
 ![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38B2AC?logo=tailwindcss)
-![Vercel AI SDK](https://img.shields.io/badge/AI%20SDK-5-black)
-![OpenAI](https://img.shields.io/badge/OpenAI-GPT--5-412991?logo=openai)
 
 ---
 
@@ -23,7 +21,6 @@ Built solo, end-to-end — product, design, frontend, backend, and integrations 
 - **Behavioral scoring → archetype mapping.** Cumulative scores are deterministically mapped to one of four investor profiles (*המתכנן / המחושב / המאוזן / המהמר*), each with hand-written, gender-aware Hebrew copy.
 - **CRM hand-off** via a server-side webhook proxy — keeps the integration secret out of the browser, swappable between Make.com / Zapier / n8n.
 - **Hebrew RTL UX** with iframe-aware embed support (`postMessage` to scroll the parent on mobile keyboard collapse).
-- **Vercel AI SDK + OpenAI scaffolded** for streamed conversational mode; the production build runs a deterministic flow today, with the LLM path kept warm for the next iteration.
 
 ---
 
@@ -67,7 +64,6 @@ Built solo, end-to-end — product, design, frontend, backend, and integrations 
 |------------------|--------|
 | Framework        | Next.js 16 (App Router), React 19, TypeScript 5 |
 | Styling          | Tailwind CSS 4 + CSS Modules |
-| AI               | Vercel AI SDK (`ai`, `@ai-sdk/openai`, `@ai-sdk/react`) — GPT-5 |
 | Data source      | Google Sheets API v4 (questionnaire as a no-code CMS) |
 | CRM integration  | Generic outbound webhook (Make.com in production) |
 | 3D / extras      | `three`, `@react-three/fiber`, `@react-three/drei` (optional avatar) |
@@ -85,7 +81,6 @@ Built solo, end-to-end — product, design, frontend, backend, and integrations 
 | `/api/questions`                   | GET    | Fetches and normalizes questions + answers from Google Sheets |
 | `/api/chat/profile-selection`      | POST   | Maps cumulative score → investor profile + Hebrew copy |
 | `/api/webhook`                     | POST   | Server-side proxy that forwards the lead to the CRM webhook |
-| `/api/chat`                        | POST   | Streamed GPT-5 conversation (scaffolded for the next iteration) |
 
 ### Question schema (Google Sheets)
 
@@ -128,13 +123,11 @@ financial-chatbot/
 │   │   ├── chat/page.tsx            # main chat UI (client component)
 │   │   └── api/
 │   │       ├── questions/route.ts                  # GET — Google Sheets loader
-│   │       ├── chat/route.ts                       # POST — streaming OpenAI
 │   │       ├── chat/profile-selection/route.ts     # POST — score → profile
 │   │       └── webhook/route.ts                    # POST — CRM forwarder
 │   ├── components/                  # MessageBubble, MultipleChoice, *Input, Loader, RobotModel
 │   ├── constants/                   # financial-profiles.ts (copy + scoring), messages.ts
 │   ├── lib/google-sheets.ts         # Sheets v4 client
-│   ├── prompts/                     # system / answer-feedback / profile-selection / financial-plan
 │   ├── documents/                   # source .docx for profile copy
 │   ├── utils/text.ts                # {{name}} placeholder replacer
 │   └── types.ts                     # shared TS types
@@ -149,7 +142,6 @@ financial-chatbot/
 - Node.js ≥ 18.18
 - A Google Sheets API key + spreadsheet structured as above
 - An outbound webhook URL (Make.com / Zapier / n8n / your own)
-- An OpenAI API key (only required if you enable the streaming AI mode)
 
 ### Setup
 
@@ -159,7 +151,6 @@ npm install
 
 # 2. Configure env vars
 cat > .env.local <<'EOF'
-OPENAI_API_KEY=sk-...
 GOOGLE_SHEETS_API_KEY=AIza...
 GOOGLE_SHEETS_ID=<your-spreadsheet-id>
 WEBHOOK_URL=https://hook.eu1.make.com/xxxxxxxxxxxxxxxxxxxx
@@ -181,13 +172,13 @@ npm run dev
 
 ### Deployment
 
-Deploys cleanly to **Vercel** or any Node host. Configure the same four env vars in your hosting provider. The chat is designed to be **embeddable in an `<iframe>`** — it emits `postMessage({ action: "scrollTop" })` to the parent window on input blur so the host page can correct scroll when the mobile keyboard collapses.
+Deploys cleanly to **Vercel** or any Node host. Configure the same env vars in your hosting provider. The chat is designed to be **embeddable in an `<iframe>`** — it emits `postMessage({ action: "scrollTop" })` to the parent window on input blur so the host page can correct scroll when the mobile keyboard collapses.
 
 ---
 
 ## About
 
-Built by **YARSON** — full-stack engineer working across React/Next.js, TypeScript, AI integrations, and conversational UX.
+Built by **YARSON** — full-stack engineer working across React/Next.js, TypeScript, and conversational UX.
 
 - 🌐 Portfolio — [yarson.dev](https://yarson.dev)
 - 💼 LinkedIn — _add your URL here_
