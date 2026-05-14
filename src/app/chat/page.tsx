@@ -447,7 +447,24 @@ export default function ChatbotPage() {
     useEffect(() => {
         if (phoneSubmitted) {
             const timer = setTimeout(() => {
-                window.location.href = "https://myfuture.co.il/thank-you";
+                const target = "https://myfuture.co.il/thank-you";
+                try {
+                    // Break out of the iframe and redirect the top-level page
+                    if (window.top && window.top !== window.self) {
+                        window.top.location.href = target;
+                        return;
+                    }
+                } catch {
+                    // Cross-origin top frame — fall through to anchor fallback
+                }
+                // Fallback: works even when window.top is cross-origin
+                const a = document.createElement("a");
+                a.href = target;
+                a.target = "_top";
+                a.rel = "noopener";
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
             }, 3000);
             
             return () => clearTimeout(timer);
